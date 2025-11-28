@@ -82,11 +82,19 @@ El objetivo es reemplazar el software legado (lento y visualmente obsoleto) por 
 
 ### 2\. Backend (API)
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   cd backend  npm install  # Asegurar configuración de credenciales en server.js  node server.js  # El servidor correrá en http://localhost:3001   `
+```bash
+ cd backend 
+ npm install  # Asegurar configuración de credenciales en server.js  
+ node server.js # El servidor correrá en http://localhost:3001   `
+```
 
 ### 3\. Frontend (Cliente)
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   cd farmacia-cliente  npm install  npm start  # La aplicación abrirá en http://localhost:3000   `
+```bash
+cd farmacia-cliente
+npm install
+npm start  # La aplicación abrirá en http://localhost:3000   `
+```
 
 ⌨️ Atajos de Teclado (Cheat Sheet)
 ----------------------------------
