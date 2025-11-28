@@ -91,8 +91,11 @@ El objetivo es reemplazar el software legado (lento y visualmente obsoleto) por 
 ### 3\. Frontend (Cliente)
 
 ```bash
+npx create-react-app farmacia-cliente
 cd farmacia-cliente
-npm install
+npm install lucide-react
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
 npm start  # La aplicación abrirá en http://localhost:3000   `
 ```
 
