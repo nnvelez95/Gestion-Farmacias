@@ -2,85 +2,122 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 
-// 1. Crear la aplicación de Express
 const app = express();
-const PORT = 3001; // Usamos el 3001 porque React suele usar el 3000
+const PORT = 3001;
 
-// 2. Middlewares (Configuraciones previas)
-app.use(cors()); // Permite que cualquier web (tu frontend) nos pida datos
-app.use(express.json()); // Permite recibir datos en formato JSON
+app.use(cors());
+app.use(express.json());
 
-// 3. Configuración de la Base de Datos
-// NOTA: Asegúrate de poner la misma contraseña que usaste en importar.js
+// CONFIGURACIÓN DE BASE DE DATOS
+// Usamos 127.0.0.1 para evitar problemas en Mac con Node v25
 const dbConfig = {
-    host: 'localhost',
+    host: '127.0.0.1', 
     user: 'root',
-    password: 'xxxx', // <--- ¡IMPORTANTE! CAMBIAR ESTO
+    password: '', // <--- ¡PON TU CONTRASEÑA AQUÍ!
     database: 'farmacia_db'
 };
 
-// 4. Ruta de Prueba (Para ver si el servidor vive)
+// --- RUTAS ---
+
 app.get('/', (req, res) => {
-    res.send('¡Hola! El servidor de la Farmacia está funcionando 💊');
+    res.send('💊 Servidor Farmacia SGF: Activo');
 });
 
-// 5. Ruta de Búsqueda de Productos (El corazón del sistema)
-// Se usa así: http://localhost:3001/api/productos?q=ibuprofeno
+// 1. BUSCAR PRODUCTOS
 app.get('/api/productos', async (req, res) => {
-    const busqueda = req.query.q; // Lo que escribe el usuario en el buscador
+    const busqueda = req.query.q;
+    if (!busqueda) return res.status(400).json({ error: 'Falta término de búsqueda' });
 
-    if (!busqueda) {
-        return res.status(400).json({ error: 'Por favor ingresa un término de búsqueda' });
+    let connection;
+    try {
+        connection = await mysql.createConnection(dbConfig);
+        let query = '';
+        let params = [];
+        
+        // Si es solo números, buscamos por ID, Código o Troquel
+        const esNumero = /^\d+$/.test(busqueda);
+
+        if (esNumero) {
+            query = `SELECT * FROM productos WHERE codigo_barras = ? OR id_externo = ? OR troquel = ? LIMIT 1`;
+            params = [busqueda, busqueda, busqueda];
+        } else {
+            // Si tiene letras, buscamos por Nombre, Laboratorio o Rubro
+            query = `SELECT * FROM productos WHERE nombre LIKE ? OR laboratorio LIKE ? OR rubro LIKE ? ORDER BY nombre ASC LIMIT 50`;
+            const termino = `%${busqueda}%`;
+            params = [termino, termino, termino];
+        }
+
+        const [rows] = await connection.execute(query, params);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error búsqueda:', error);
+        res.status(500).json({ error: 'Error interno al buscar productos' });
+    } finally {
+        if (connection) await connection.end();
+    }
+});
+
+// 2. PROCESAR VENTA (TRANSACCIÓN COMPLETA)
+app.post('/api/ventas', async (req, res) => {
+    const { carrito, total, items_total } = req.body;
+
+    if (!carrito || carrito.length === 0) {
+        return res.status(400).json({ error: 'El carrito está vacío' });
     }
 
     let connection;
     try {
         connection = await mysql.createConnection(dbConfig);
         
-        // Lógica inteligente:
-        // Si lo que busca es un número largo, asumimos que es Código de Barras o Troquel
-        // Si es texto, buscamos por Nombre o Droga
-        
-        let query = '';
-        let params = [];
-        
-        // Detectamos si es numérico (para código de barras)
-        const esNumero = /^\d+$/.test(busqueda);
+        // INICIO DE TRANSACCIÓN
+        await connection.beginTransaction();
 
-        if (esNumero) {
-            query = `
-                SELECT * FROM productos 
-                WHERE codigo_barras = ? OR id_externo = ? OR troquel = ?
-                LIMIT 1
-            `;
-            params = [busqueda, busqueda, busqueda];
-        } else {
-            // Búsqueda por texto (nombre, laboratorio o rubro)
-            // Usamos % para decir "que contenga este texto"
-            query = `
-                SELECT * FROM productos 
-                WHERE nombre LIKE ? OR laboratorio LIKE ? OR rubro LIKE ?
-                ORDER BY nombre ASC
-                LIMIT 50
-            `;
-            const termino = `%${busqueda}%`;
-            params = [termino, termino, termino];
+        // A. Crear la Venta (Cabecera)
+        const [ventaResult] = await connection.execute(
+            'INSERT INTO ventas (total, items_cantidad, vendedor) VALUES (?, ?, ?)',
+            [total, items_total, 'ADMIN']
+        );
+        const ventaId = ventaResult.insertId;
+
+        // B. Procesar cada item
+        for (const item of carrito) {
+            // 1. Guardar detalle
+            await connection.execute(
+                `INSERT INTO detalle_ventas 
+                (venta_id, producto_id, nombre_producto, cantidad, precio_unitario, subtotal) 
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    ventaId, 
+                    item.id_externo, 
+                    item.nombre, 
+                    item.cantidad, 
+                    item.precio_venta, 
+                    (item.precio_venta * item.cantidad)
+                ]
+            );
+
+            // 2. Descontar Stock
+            await connection.execute(
+                'UPDATE productos SET stock_actual = stock_actual - ? WHERE id_externo = ?',
+                [item.cantidad, item.id_externo]
+            );
         }
 
-        const [rows] = await connection.execute(query, params);
+        // Confirmar cambios
+        await connection.commit();
         
-        res.json(rows); // Devolvemos los resultados al Frontend
+        console.log(`✅ Venta #${ventaId} registrada. Total: $${total}`);
+        res.json({ success: true, ventaId, message: 'Venta procesada correctamente' });
 
     } catch (error) {
-        console.error('Error en la búsqueda:', error);
-        res.status(500).json({ error: 'Error al buscar en la base de datos' });
+        if (connection) await connection.rollback();
+        console.error('❌ Error procesando venta:', error);
+        res.status(500).json({ error: 'Error al procesar la venta en el servidor' });
     } finally {
-        if (connection) await connection.end(); // Cerramos la conexión siempre
+        if (connection) await connection.end();
     }
 });
 
-// 6. Iniciar el servidor
 app.listen(PORT, () => {
-    console.log(`\n🚀 Servidor listo y escuchando en http://localhost:${PORT}`);
-    console.log(`💊 Prueba buscar algo: http://localhost:${PORT}/api/productos?q=aspirina\n`);
+    console.log(`\n🚀 Servidor SGF listo en http://127.0.0.1:${PORT}`);
 });

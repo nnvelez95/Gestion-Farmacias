@@ -1,0 +1,33 @@
+# Dependencias de Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Variables de entorno (Seguridad)
+.env
+.env.local
+
+# Archivos de Build (React)
+build/
+dist/
+
+# Archivos del Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Logs del sistema
+*.log
+
+
+# Ignorar todos los CSV generados
+*.csv
+# Ignorar carpetas de datos generados
+
+data/
+backup/
+dumps/
+*.sql
+
+# Editor de código
+.vscode/
+.idea/

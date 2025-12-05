@@ -4,9 +4,9 @@ const csv = require('csv-parser'); // Necesitas instalar: npm install csv-parser
 
 // Configuración de Conexión
 const dbConfig = {
-    host: 'localhost',
+    host: '127.0.0.1',
     user: 'root',
-    password: '1123', // CAMBIAR ESTO
+    password: '', // CAMBIAR ESTO
     database: 'farmacia_db'
 };
 

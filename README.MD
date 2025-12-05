@@ -1,132 +1,92 @@
-SGF Farmacia (Sistema de Gestión Farmacéutica) 💊
-=================================================
+# 💊 SGF Farmacia (Sistema de Gestión Farmacéutica)
 
-📋 Descripción del Proyecto
----------------------------
+Sistema de Punto de Venta (POS) moderno, diseñado para farmacias argentinas, enfocado en la velocidad de operación mediante teclado y búsqueda instantánea.
 
-SGF Farmacia es una aplicación de Punto de Venta (POS) moderna diseñada específicamente para el flujo de trabajo ágil de una farmacia argentina.
+## 🚀 Funcionalidades Implementadas (Estado Actual)
 
-El objetivo es reemplazar el software legado (lento y visualmente obsoleto) por una arquitectura web moderna (**React + Node.js**), manteniendo la velocidad y usabilidad de las aplicaciones de escritorio clásicas (uso intensivo de teclado, alto contraste, búsquedas instantáneas).
+### 🛒 Módulo de Ventas (Front Desk)
+* **Búsqueda Híbrida Inteligente:**
+    * Detección automática de **Código de Barras/Troquel** (numérico) vs **Nombre/Droga** (texto).
+    * Resultados en tiempo real conectados al Vademécum.
+* **Interfaz "Keyboard-First" (Sin mouse):**
+    * `F10`: Activar buscador.
+    * `Flechas`: Navegar resultados.
+    * `Enter`: Agregar al carrito.
+    * `F5`: Procesar venta (Cobrar).
+* **Gestión de Carrito:**
+    * Modificación manual de **Precios Unitarios** (para descuentos o redondeos) y **Cantidades** mediante modal emergente.
+    * Cálculo automático de totales.
+* **Feedback de Usuario:**
+    * Notificaciones tipo "Toast" para confirmar ventas o alertar errores.
 
-🚀 Funcionalidades Principales
-------------------------------
+### ⚙️ Backend & Datos
+* **Transacciones ACID:** Las ventas aseguran la integridad de datos (si falla el stock, se cancela la venta).
+* **Control de Stock:** Descuento automático del inventario al confirmar el ticket.
+* **Persistencia:** Base de datos relacional MySQL con tablas normalizadas (`productos`, `ventas`, `detalle_ventas`).
 
-### ✅ Implementadas (MVP)
+---
 
-*   **Búsqueda Dual Inteligente:**
-    
-    *   Búsqueda por **Nombre/Droga** (texto) y por **Código de Barras/Troquel** (numérico) en el mismo campo.
-        
-    *   Resultados en tiempo real (< 300ms) conectados a base de datos MySQL.
-        
-*   **Interfaz "Keyboard-First":**
-    
-    *   F10: Foco inmediato al buscador.
-        
-    *   Flechas ↑ ↓: Navegación por la lista de resultados.
-        
-    *   Enter: Agregar al carrito.
-        
-    *   F5: Disparar cobro.
-        
-*   **Gestión de Carrito Flexible:**
-    
-    *   Cálculo automático de totales.
-        
-    *   **Edición en línea:** Posibilidad de modificar precio unitario (descuentos manuales/redondeo) y cantidad desde un modal.
-        
-*   **Base de Datos Real:**
-    
-    *   Integración con MySQL conteniendo Vademécum completo (precios, laboratorios, troqueles).
-        
+## 🛠️ Stack Tecnológico
 
-### 🚧 En Desarrollo (Roadmap)
+* **Frontend:** React 18, Tailwind CSS v3, Lucide React (Iconos).
+* **Backend:** Node.js v25+, Express.
+* **Base de Datos:** MySQL 8.0.
+* **Comunicación:** API REST (JSON).
 
-*   **Empaquetado Desktop:** Migración a **Electron** para convertir la web en un .exe nativo.
-    
-*   **Impresión:** Conexión directa con impresoras térmicas (EPSON/Hasar) para tickets.
-    
-*   **Obras Sociales:** Módulo para calcular cobertura % según la obra social del cliente.
-    
-*   **Cierre de Caja (Z):** Reportes diarios de facturación.
-    
+---
 
-🛠️ Stack Tecnológico
----------------------
-
-*   **Frontend:** React 18, Tailwind CSS v3, Lucide React (Iconos).
-    
-*   **Backend:** Node.js, Express.
-    
-*   **Base de Datos:** MySQL 8.0 (con tablas optimizadas e indexadas).
-    
-*   **Infraestructura:** API REST local.
-    
-
-⚙️ Instalación y Despliegue Local
----------------------------------
+## 📦 Instalación y Despliegue Local
 
 ### Pre-requisitos
+* Node.js instalado.
+* MySQL Server corriendo localmente.
 
-*   Node.js (v16 o superior).
-    
-*   MySQL Server instalado y corriendo.
-    
+### 1. Configuración de Base de Datos
+Ejecutar los scripts SQL ubicados en `/backend` (o creados manualmente):
+1. Crear DB `farmacia_db`.
+2. Crear tablas (`productos`, `ventas`, `detalle_ventas`).
+3. Importar CSV de productos usando `node importar.js`.
 
-### 1\. Base de Datos
-
-1.  Crear la base de datos farmacia_db en MySQL.
-    
-2.  Ejecutar el script de importación importar.js ubicado en /backend para poblar la tabla productos desde el CSV maestro.
-    
-
-### 2\. Backend (API)
-
+### 2. Iniciar el Backend (API)
 ```bash
- cd backend 
- npm install  # Asegurar configuración de credenciales en server.js  
- node server.js # El servidor correrá en http://localhost:3001   `
+cd backend
+npm install
+# Asegurar que en server.js las credenciales de MySQL sean correctas
+# NOTA: En macOS, usar host: '127.0.0.1' en lugar de localhost
+node server.js
+
 ```
 
-### 3\. Frontend (Cliente)
+_El servidor correrá en: http://127.0.0.1:3001_
+
+### 3\. Iniciar el Frontend (Cliente)
 
 ```bash
-npx create-react-app farmacia-cliente
 cd farmacia-cliente
-npm install lucide-react
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-npm start  # La aplicación abrirá en http://localhost:3000   `
+npm install
+npm start
 ```
+_La aplicación abrirá en: http://localhost:3000_
 
-⌨️ Atajos de Teclado (Cheat Sheet)
-----------------------------------
+🗺️ Roadmap (Próximos Pasos)
+----------------------------
 
-**Tecla**
-
-**Acción**
-
-**F10**
-
-Enfocar barra de búsqueda
-
-**F5**
-
-Finalizar venta (Cobrar)
-
-**F1**
-
-Mostrar ayuda
-
-**ESC**
-
-Cancelar edición / Cerrar modales
-
-**Enter**
-
-Seleccionar producto / Guardar cambios
+*   \[x\] Búsqueda y Carrito.
+    
+*   \[x\] Conexión Backend-Frontend.
+    
+*   \[x\] Procesamiento de Venta y Stock.
+    
+*   \[ \] **Reportes:** Cierre de Caja (Z) y listado de ventas diarias.
+    
+*   \[ \] **Impresión:** Conexión con impresoras térmicas (ESC/POS).
+    
+*   \[ \] **Clientes:** Gestión de Obras Sociales y afiliados.
+    
+*   \[ \] **Auth:** Sistema de Login para múltiples vendedores.
+    
 
 🤝 Contribución
 ---------------
 
-Proyecto de código abierto para modernización de farmacias. Las Pull Requests son bienvenidas.
+Proyecto desarrollado con fines educativos y de modernización tecnológica para el sector farmacéutico.
