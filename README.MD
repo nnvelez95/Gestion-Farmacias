@@ -1,92 +1,94 @@
-# 💊 SGF Farmacia (Sistema de Gestión Farmacéutica)
+# **💊 SGF Farmacia \- Sistema de Gestión de Farmacia v2.0**
 
-Sistema de Punto de Venta (POS) moderno, diseñado para farmacias argentinas, enfocado en la velocidad de operación mediante teclado y búsqueda instantánea.
+Sistema integral de Punto de Venta (POS) y Gestión de Stock para farmacias, desarrollado con **React**, **Node.js** y **MySQL**.
 
-## 🚀 Funcionalidades Implementadas (Estado Actual)
+Esta versión (v2.0) introduce una reestructuración completa de la base de datos para soportar costos, márgenes, precios PAMI y búsqueda específica por droga/monodroga.
 
-### 🛒 Módulo de Ventas (Front Desk)
-* **Búsqueda Híbrida Inteligente:**
-    * Detección automática de **Código de Barras/Troquel** (numérico) vs **Nombre/Droga** (texto).
-    * Resultados en tiempo real conectados al Vademécum.
-* **Interfaz "Keyboard-First" (Sin mouse):**
-    * `F10`: Activar buscador.
-    * `Flechas`: Navegar resultados.
-    * `Enter`: Agregar al carrito.
-    * `F5`: Procesar venta (Cobrar).
-* **Gestión de Carrito:**
-    * Modificación manual de **Precios Unitarios** (para descuentos o redondeos) y **Cantidades** mediante modal emergente.
-    * Cálculo automático de totales.
-* **Feedback de Usuario:**
-    * Notificaciones tipo "Toast" para confirmar ventas o alertar errores.
+## **🚀 Nuevas Características (v2.0)**
 
-### ⚙️ Backend & Datos
-* **Transacciones ACID:** Las ventas aseguran la integridad de datos (si falla el stock, se cancela la venta).
-* **Control de Stock:** Descuento automático del inventario al confirmar el ticket.
-* **Persistencia:** Base de datos relacional MySQL con tablas normalizadas (`productos`, `ventas`, `detalle_ventas`).
+### **📊 Gestión de Datos Profesional**
 
----
+* **Base de Datos Expandida:** Soporte nativo para columnas Costo, Margen, Precio PAMI y Droga separada.  
+* **Actualizador "Blindado":** Script inteligente (actualizador.js) que:  
+  * Importa listas de precios masivas (CSV).  
+  * Realiza **UPSERT** (Crea si es nuevo, Actualiza si existe).  
+  * **Protección de Stock:** Actualizar precios NO resetea el stock de la farmacia.  
+  * **Safety Check:** Corta automáticamente textos que excedan los límites de la base de datos para evitar errores de importación.
 
-## 🛠️ Stack Tecnológico
+### **⚡ Punto de Venta (POS) Optimizado**
 
-* **Frontend:** React 18, Tailwind CSS v3, Lucide React (Iconos).
-* **Backend:** Node.js v25+, Express.
-* **Base de Datos:** MySQL 8.0.
-* **Comunicación:** API REST (JSON).
+* **Atajos de Teclado Profesionales:**  
+  * F1: Ayuda / Atajos.  
+  * F2: **Búsqueda Avanzada** (Antes F10). Permite filtrar por Droga, Laboratorio, etc.  
+  * F12: **Cobrar / Procesar Venta** (Antes F5). Evita conflictos con la recarga del navegador.  
+* **Descuentos Globales:** Posibilidad de aplicar un porcentaje de descuento al total del ticket.  
+* **Búsqueda Precisa:** El buscador ahora diferencia entre "Nombre Comercial" y "Droga" gracias a la nueva estructura de datos.
 
----
+## **🛠️ Instalación y Configuración**
 
-## 📦 Instalación y Despliegue Local
+### **1\. Base de Datos**
 
-### Pre-requisitos
-* Node.js instalado.
-* MySQL Server corriendo localmente.
+El proyecto incluye una carpeta /db con el script de inicialización.
 
-### 1. Configuración de Base de Datos
-Ejecutar los scripts SQL ubicados en `/backend` (o creados manualmente):
-1. Crear DB `farmacia_db`.
-2. Crear tablas (`productos`, `ventas`, `detalle_ventas`).
-3. Importar CSV de productos usando `node importar.js`.
+1. Crear una base de datos en MySQL llamada farmacia\_db.  
+2. Ejecutar el script db/init.sql (o el script provisto en la carpeta db) para crear las tablas con la estructura extendida (soporte para VARCHAR(500) para evitar errores de longitud).
 
-### 2. Iniciar el Backend (API)
-```bash
-cd backend
-npm install
-# Asegurar que en server.js las credenciales de MySQL sean correctas
-# NOTA: En macOS, usar host: '127.0.0.1' en lugar de localhost
+### **2\. Backend (Servidor)**
+
+Ubicado en la carpeta /backend.
+
+cd backend  
+npm install  
+\# Crear archivo .env con:  
+\# DB\_HOST=127.0.0.1  
+\# DB\_USER=root  
+\# DB\_PASS=tu\_password  
+\# DB\_NAME=farmacia\_db  
+\# PORT=3001
+
+\# Para iniciar el servidor:  
 node server.js
 
-```
+### **3\. Frontend (Cliente)**
 
-_El servidor correrá en: http://127.0.0.1:3001_
+Ubicado en la carpeta /farmacia-cliente (o raíz del cliente).
 
-### 3\. Iniciar el Frontend (Cliente)
+cd farmacia-cliente  
+npm install  
+\# Crear archivo .env con:  
+\# REACT\_APP\_API\_URL=\[http://127.0.0.1:3001/api\](http://127.0.0.1:3001/api)
 
-```bash
-cd farmacia-cliente
-npm install
+\# Para iniciar la interfaz:  
 npm start
-```
-_La aplicación abrirá en: http://localhost:3000_
 
-🗺️ Roadmap (Próximos Pasos)
-----------------------------
+## **🔄 Cómo Actualizar Precios**
 
-*   \[x\] Búsqueda y Carrito.
-    
-*   \[x\] Conexión Backend-Frontend.
-    
-*   \[x\] Procesamiento de Venta y Stock.
-    
-*   \[ \] **Reportes:** Cierre de Caja (Z) y listado de ventas diarias.
-    
-*   \[ \] **Impresión:** Conexión con impresoras térmicas (ESC/POS).
-    
-*   \[ \] **Clientes:** Gestión de Obras Sociales y afiliados.
-    
-*   \[ \] **Auth:** Sistema de Login para múltiples vendedores.
-    
+El sistema cuenta con un **Importador Maestro** que lee archivos CSV de proveedores (formato Base\_Datos\_Productos\_Argentina\_Final.csv).
 
-🤝 Contribución
----------------
+1. Colocar el archivo .csv actualizado en la carpeta /backend.  
+2. Ejecutar el script actualizador:
 
-Proyecto desarrollado con fines educativos y de modernización tecnológica para el sector farmacéutico.
+cd backend  
+node actualizador.js
+
+**Nota:** El actualizador cortará automáticamente descripciones o códigos de barras que superen los 255 caracteres para asegurar la integridad de la base de datos.
+
+## **⌨️ Atajos de Teclado (Cheat Sheet)**
+
+| Tecla | Acción | Descripción |
+| :---- | :---- | :---- |
+| **F2** | 🔍 Buscar | Abre el modal de búsqueda avanzada (Droga, Lab, etc). |
+| **F12** | 💳 Cobrar | Procesa la venta actual e imprime ticket (simulado). |
+| **F1** | ❓ Ayuda | Muestra la lista de comandos disponibles. |
+| **ESC** | ❌ Cancelar | Cierra modales o cancela ediciones. |
+
+## **📂 Estructura del Proyecto**
+
+/  
+├── db/                 \# Scripts SQL para creación de tablas  
+├── backend/            \# API Node.js \+ Express  
+│   ├── server.js       \# Servidor principal y lógica de búsqueda  
+│   └── actualizador.js \# Script de importación masiva (CSV \-\> MySQL)  
+└── farmacia-cliente/   \# Frontend React  
+    └── src/  
+        └── App.js      \# Lógica principal del POS  

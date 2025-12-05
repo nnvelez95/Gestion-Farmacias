@@ -23,10 +23,10 @@ Thumbs.db
 *.csv
 # Ignorar carpetas de datos generados
 
-data/
+
 backup/
 dumps/
-*.sql
+
 
 # Editor de código
 .vscode/
